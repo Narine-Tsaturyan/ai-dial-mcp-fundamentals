@@ -1,17 +1,16 @@
 import json
 from collections import defaultdict
-from typing import Any
+from typing import Any, List
 
 from openai import AsyncAzureOpenAI
 
 from agent.models.message import Message, Role
 from agent.mcp_client import MCPClient
 
-
 class DialClient:
     """Handles AI model interactions and integrates with MCP client"""
 
-    def __init__(self, api_key: str, endpoint: str, tools: list[dict[str, Any]], mcp_client: MCPClient):
+    def __init__(self, api_key: str, endpoint: str, tools: List[dict], mcp_client: MCPClient):
         self.tools = tools
         self.mcp_client = mcp_client
         self.openai = AsyncAzureOpenAI(
@@ -33,7 +32,7 @@ class DialClient:
 
         return list(tool_dict.values())
 
-    async def _stream_response(self, messages: list[Message]) -> Message:
+    async def _stream_response(self, messages: List[Message]) -> Message:
         """Stream OpenAI response and handle tool calls"""
         stream = await self.openai.chat.completions.create(
             **{
@@ -68,7 +67,7 @@ class DialClient:
             tool_calls=self._collect_tool_calls(tool_deltas) if tool_deltas else []
         )
 
-    async def get_completion(self, messages: list[Message]) -> Message:
+    async def get_completion(self, messages: List[Message]) -> Message:
         """Process user query with streaming and tool calling"""
         ai_message: Message = await self._stream_response(messages)
 
@@ -81,11 +80,27 @@ class DialClient:
 
         return ai_message
 
-    async def _call_tools(self, ai_message: Message, messages: list[Message]):
+    async def _call_tools(self, ai_message: Message, messages: List[Message]):
         """Execute tool calls using MCP client"""
-        #TODO:
-        # 1. Iterate through tool_calls
-        # 2. Get tool name and tool arguments (arguments is a JSON, don't forget about that)
-        # 3. Wrap into try/except block and call mcp_client tool call. If succeed then add tool message (don't forget
-        #    about tool call id), otherwise add tool message with error message (it kind of fallback strategy).
-        raise NotImplementedError()
+        for tool_call in ai_message.tool_calls:
+            tool_name = tool_call["function"]["name"]
+            tool_args = json.loads(tool_call["function"]["arguments"])
+            try:
+                result = await self.mcp_client.call_tool(tool_name, tool_args)
+                messages.append(
+                    Message(
+                        role=Role.TOOL,
+                        name=tool_name,
+                        tool_call_id=tool_call["id"],
+                        content=result
+                    )
+                )
+            except Exception as e:
+                messages.append(
+                    Message(
+                        role=Role.TOOL,
+                        name=tool_name,
+                        tool_call_id=tool_call["id"],
+                        content=f"Error: {str(e)}"
+                    )
+                )

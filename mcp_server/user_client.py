@@ -25,7 +25,7 @@ class UserClient:
 
         return users_str
 
-    async def get_user(self, user_id: int) -> str:
+    def get_user(self, user_id: int) -> str:
         headers = {"Content-Type": "application/json"}
 
         response = requests.get(url=f"{USER_SERVICE_ENDPOINT}/v1/users/{user_id}", headers=headers)
@@ -36,7 +36,7 @@ class UserClient:
 
         raise Exception(f"HTTP {response.status_code}: {response.text}")
 
-    async def search_users(
+    def search_users(
             self,
             name: Optional[str] = None,
             surname: Optional[str] = None,
@@ -64,7 +64,7 @@ class UserClient:
 
         raise Exception(f"HTTP {response.status_code}: {response.text}")
 
-    async def add_user(self, user_create_model: UserCreate) -> str:
+    def add_user(self, user_create_model: UserCreate) -> str:
         headers = {"Content-Type": "application/json"}
 
         response = requests.post(
@@ -78,7 +78,7 @@ class UserClient:
 
         raise Exception(f"HTTP {response.status_code}: {response.text}")
 
-    async def update_user(self, user_id: int, user_update_model: UserUpdate) -> str:
+     def update_user(self, user_id: int, user_update_model: UserUpdate) -> str:
         headers = {"Content-Type": "application/json"}
 
         response = requests.put(
@@ -92,7 +92,7 @@ class UserClient:
 
         raise Exception(f"HTTP {response.status_code}: {response.text}")
 
-    async def delete_user(self, user_id: int) -> str:
+     def delete_user(self, user_id: int) -> str:
         headers = {"Content-Type": "application/json"}
 
         response = requests.delete(url=f"{USER_SERVICE_ENDPOINT}/v1/users/{user_id}", headers=headers)
