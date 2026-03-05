@@ -52,8 +52,8 @@ async def main():
 
         # 6. Create DialClient with OpenAI tools
         dial_client = DialClient(
-            api_key=os.getenv("DIAL_API_KEY", "dial-kqibp66vnaqthq1nnve8gzqynij"),
-            endpoint=os.getenv("DIAL_ENDPOINT", "https://ai-proxy.lab.epam.com"),
+            api_key=os.getenv("DIAL_API_KEY", "YOUR_DIAL_API_KEY"),
+            endpoint=os.getenv("DIAL_ENDPOINT", "YOUR_DIAL_ENDPOINT"),
             tools=openai_tools,
             mcp_client=mcp_client
         )
